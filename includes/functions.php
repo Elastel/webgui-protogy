@@ -768,6 +768,13 @@ function get_public_ip()
 
 function getFavicon($target, $hostname)
 {
+    if ($target == null || $target === '') {
+        $target = getTarget();
+    }
+    if ($hostname == null || $hostname === '') {
+        $hostname = getHostname();
+    }
+
     $name='';
     if ($target != null && file_exists('/var/www/html/app/icons/'.$hostname.'_favicon.png')) {
         $name = "app/icons/" . $hostname . "_favicon.png";
@@ -782,13 +789,20 @@ function getFavicon($target, $hostname)
 
 function setLoginLogo($target, $hostname)
 {
+    if ($target == null || $target === '') {
+        $target = getTarget();
+    }
+    if ($hostname == null || $hostname === '') {
+        $hostname = getHostname();
+    }
+
     $name='';
     if ($target != null && (strpos($target, "IQEG") !== false || strpos($target, "IQEC") !== false)) {
         $name = "Iqflow.png";
         echo '<img src="app/img/'.$name.'" class="navbar-logo" alt="logo" class="img-fluid" style="width: 20rem;">';
     } else if ($target != null && file_exists('/var/www/html/app/img/'.$hostname.'.php')) {
         $name = $hostname . ".png";
-        echo '<img src="app/img/'.$name.'" class="navbar-logo" alt="logo" class="img-fluid" style="width: 20rem;">';
+        echo '<img src="app/img/'.$name.'" class="navbar-logo" alt="logo" style="max-width: 100%; max-height: 8rem; width: auto; height: auto; display: block; margin: 0 auto;">';
     } else if ($target != null && file_exists('/var/www/html/app/img/'.$target.'.php')) {
         $name = $target . ".png";
         echo '<img src="app/img/'.$name.'" class="navbar-logo" alt="logo" class="img-fluid" style="width: 20rem;">';
@@ -800,15 +814,24 @@ function setLoginLogo($target, $hostname)
     } else {
         $name = "elastel.png";
         echo '<img src="app/img/'.$name.'" class="navbar-logo" class="img-fluid" style="max-width: 100px;">';
-        echo '<h2 class="login-brand">' . htmlspecialchars(RASPI_BRAND_TEXT) . '</h2>';
     }
 }
 
 function setLoginGuide($target, $hostname)
 {
+    if ($target == null || $target === '') {
+        $target = getTarget();
+    }
+    if ($hostname == null || $hostname === '') {
+        $hostname = getHostname();
+    }
+
     $url='';
     if ($target != null && (strpos($target, "IQEG") !== false || strpos($target, "IQEC") !== false)) {
         $url = "https://docs.iqflow.io/";
+    } else if ($hostname != null && $hostname !== '' && file_exists('/var/www/html/app/img/'.$hostname.'.php')) {
+        // branded device: no user guide link
+        return;
     } else if (($target != null && (strpos($target, "EMT") !== false)) || strpos($target, "&OEM") !== false || strpos($target, "4logit") !== false ) {
         return;
     } else {
@@ -822,6 +845,13 @@ function setLoginGuide($target, $hostname)
 
 function setSidbarLogo($target, $hostname)
 {
+    if ($target == null || $target === '') {
+        $target = getTarget();
+    }
+    if ($hostname == null || $hostname === '') {
+        $hostname = getHostname();
+    }
+
     $name='';
     if ($target != null && (strpos($target, "IQEG") !== false || strpos($target, "IQEC") !== false)) {
         $name = "Iqflow.php";
@@ -829,6 +859,8 @@ function setSidbarLogo($target, $hostname)
         return;
     } else if ($target != null && file_exists('/var/www/html/app/img/'.$hostname.'.php')) {
         $name = $hostname . ".php";
+        echo '<img src="app/img/'. $name .'" class="navbar-logo navbar-logo-tall">';
+        return;
     } else if ($target != null && file_exists('/var/www/html/app/img/'.$target.'.php')) {
         $name = $target . ".php";
         echo '<img src="app/img/'. $name .'" class="navbar-logo navbar-logo-tall">';
@@ -875,6 +907,22 @@ function getTarget()
 function getSystemTime()
 {
     return trim(shell_exec('date "+%Y-%m-%d %H:%M:%S" 2>/dev/null'));
+}
+
+/**
+ * Whether the About page is available for the current device.
+ * Must stay in sync with the About entry in the sidebar.
+ */
+function isAboutPageEnabled($target = null)
+{
+    if ($target == null || $target === '') {
+        $target = getTarget();
+    }
+    if ($target == null || $target === '') {
+        return true;
+    }
+
+    return in_array($target, array('EC211', 'EH607', '4logit'), true);
 }
 
 function model_category($option)
@@ -1353,6 +1401,11 @@ function handlePageActions($extraFooterScripts, $page)
             DisplayTimeSetting();
             break;
         case "/about":
+            if (!isAboutPageEnabled()) {
+                // Page not available on this device: redirect instead of rendering it.
+                echo '<script>window.location.replace("/dashboard");</script>';
+                break;
+            }
             DisplayAbout();
             break;
         case "/basic_conf":

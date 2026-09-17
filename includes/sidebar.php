@@ -100,14 +100,10 @@
         </li>
         <?php endforeach; // foreach group ?>
 
-        <?php if ($target == null || $target == 'EC211' || $target == 'EH607') : ?>
+        <?php if (isAboutPageEnabled($target)) : ?>
         <li class="nav-item">
-            <a class="nav-link" href="about"><i class="fas fa-info-circle fa-fw mr-2"></i><span class="nav-label"><?php echo _("About Elastel"); ?></span></a>
+            <a class="nav-link" href="about"><i class="fas fa-info-circle fa-fw mr-2"></i><span class="nav-label"><?php echo ($target == '4logit') ? _("About 4Logit") : _("About Elastel"); ?></span></a>
         </li>
-        <?php elseif ($target == '4logit') : ?>
-        <li class="nav-item">
-            <a class="nav-link" href="about"><i class="fas fa-info-circle fa-fw mr-2"></i><span class="nav-label"><?php echo _("About 4Logit"); ?></span></a>
-        </li>   
         <?php endif; ?>
         <li class="nav-item">
             <a class="nav-link" href="logout"><i class="fas fa-sign-out-alt mr-2"></i><span class="nav-label"><?php echo _("Logout"); ?></a>

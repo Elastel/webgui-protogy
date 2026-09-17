@@ -6,6 +6,16 @@
           <div class="col">
             <?php 
               $target = file_get_contents('/etc/target_model');
+              // Prefer a device specific brand logo (app/img/<hostname>.png) when available.
+              // No fallback image: if there is no brand logo, render nothing (nothing is loaded).
+              $brandLogo = '';
+              $brandHostname = function_exists('getHostname') ? trim((string) getHostname()) : '';
+              if ($brandHostname === '' && file_exists('/etc/hostname')) {
+                  $brandHostname = trim((string) file_get_contents('/etc/hostname'));
+              }
+              if ($brandHostname !== '' && file_exists('/var/www/html/app/img/'.$brandHostname.'.png')) {
+                  $brandLogo = 'app/img/'.$brandHostname.'.png';
+              }
               if (trim($target) === '4logit') {
                 echo _("About 4Logit");
               } else {
@@ -30,7 +40,9 @@
             </br></br></br></br></br></br></br></br></br></br></br></br></br></br>
             <?php } else {?>
             <div class="col-md-8">
-              <div class="ml-5 mt-3"><img class="about-logo" src="app/img/elastel_logo.png"></div>
+              <?php if ($brandLogo !== '') : ?>
+              <div class="ml-5 mt-3"><img class="about-logo" src="<?php echo htmlspecialchars($brandLogo, ENT_QUOTES); ?>"></div>
+              <?php endif; ?>
               <div class="mt-3" style="text-indent : 1rem"><a href="https://www.elastel.com/">Elastel</a> Technology Ltd is a design and manufacturing company providing industrial-quality wireless products and solutions for IoT and M2M.
               </div>
               <div class="mt-3" style="text-indent : 1rem">With an innovative design on open standards, premium quality control, Elastel providing the most Elastic and robust <a href="https://www.elastel.com/product-category/industrial-computer/">Industrial Computers</a>,
